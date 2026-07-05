@@ -3,9 +3,38 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
+const __jsonld = {"@context":"https://schema.org","@type":"WebApplication","name":"TaskFlow Manager","description":"Task manager premium","url":"https://todo-manager.vercel.app","applicationCategory":"ProductivityApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"IDR"}};
+
 export const metadata = {
-  title: "TaskFlow — Task Manager",
-  description: "Task manager premium: prioritas, tenggat, label, pencarian, sort, statistik, dark mode.",
+  metadataBase: new URL("https://todo-manager.vercel.app"),
+  title: "TaskFlow — Task Manager Lengkap",
+  description: "Task manager premium: prioritas, tenggat, label, pencarian, sort, statistik, dan dark mode.",
+  applicationName: "TaskFlow",
+  keywords: ["task manager", "manajemen tugas", "produktivitas", "to-do", "pengelola tugas"],
+  authors: [{ name: "TaskFlow" }],
+  creator: "TaskFlow",
+  publisher: "TaskFlow",
+  alternates: { canonical: "https://todo-manager.vercel.app" },
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    url: "https://todo-manager.vercel.app",
+    siteName: "TaskFlow",
+    title: "TaskFlow — Task Manager Lengkap",
+    description: "Task manager premium: prioritas, tenggat, label, pencarian, sort, statistik, dan dark mode.",
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "TaskFlow — Task Manager Lengkap" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TaskFlow — Task Manager Lengkap",
+    description: "Task manager premium: prioritas, tenggat, label, pencarian, sort, statistik, dan dark mode.",
+    images: ["/og.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+  },
 };
 
 export const viewport = { themeColor: "#4f46e5" };
@@ -20,7 +49,8 @@ export default function RootLayout({ children }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">{children}<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(__jsonld) }} />
+        </body>
     </html>
   );
 }
