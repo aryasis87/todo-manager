@@ -3,10 +3,10 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
-const __jsonld = {"@context":"https://schema.org","@type":"WebApplication","name":"TaskFlow Manager","description":"Task manager premium","url":"https://todo-manager.vercel.app","applicationCategory":"ProductivityApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"IDR"}};
+const __jsonld = {"@context":"https://schema.org","@type":"WebApplication","name":"TaskFlow Manager","description":"Task manager premium","url":"https://task-manager.pintuweb.com","applicationCategory":"ProductivityApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"IDR"}};
 
 export const metadata = {
-  metadataBase: new URL("https://todo-manager.vercel.app"),
+  metadataBase: new URL("https://task-manager.pintuweb.com"),
   title: "TaskFlow — Task Manager Lengkap",
   description: "Task manager premium: prioritas, tenggat, label, pencarian, sort, statistik, dan dark mode.",
   applicationName: "TaskFlow",
@@ -14,11 +14,11 @@ export const metadata = {
   authors: [{ name: "TaskFlow" }],
   creator: "TaskFlow",
   publisher: "TaskFlow",
-  alternates: { canonical: "https://todo-manager.vercel.app" },
+  alternates: { canonical: "https://task-manager.pintuweb.com" },
   openGraph: {
     type: "website",
     locale: "id_ID",
-    url: "https://todo-manager.vercel.app",
+    url: "https://task-manager.pintuweb.com",
     siteName: "TaskFlow",
     title: "TaskFlow — Task Manager Lengkap",
     description: "Task manager premium: prioritas, tenggat, label, pencarian, sort, statistik, dan dark mode.",

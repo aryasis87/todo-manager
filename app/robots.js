@@ -1,7 +1,7 @@
 export default function robots() {
   return {
     rules: { userAgent: "*", allow: "/" },
-    sitemap: "https://todo-manager.vercel.app/sitemap.xml",
-    host: "https://todo-manager.vercel.app",
+    sitemap: "https://task-manager.pintuweb.com/sitemap.xml",
+    host: "https://task-manager.pintuweb.com",
   };
 }
