@@ -1,5 +1,5 @@
 export default function sitemap() {
   return [
-    { url: "https://task-manager.pintuweb.com", lastModified: new Date(), changeFrequency: "monthly", priority: 1 },
+    { url: "https://todo-manager-ivory-seven.vercel.app", lastModified: new Date(), changeFrequency: "monthly", priority: 1 },
   ];
 }
