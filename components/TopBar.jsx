@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { ClipboardList, Search, Moon, Sun } from 'lucide-react';
 
-// Top app bar selaras suite TaskFlow: logo, pencarian, toggle tema, avatar.
+// Top app bar Tuntas: logo, pencarian, toggle tema, avatar.
 export default function TopBar({ query, onQuery }) {
   const [dark, setDark] = useState(false);
   useEffect(() => { setDark(document.documentElement.classList.contains('dark')); }, []);
@@ -21,7 +21,7 @@ export default function TopBar({ query, onQuery }) {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-container text-on-primary">
             <ClipboardList size={18} />
           </span>
-          <span className="text-xl font-bold tracking-tight text-primary">TaskFlow</span>
+          <span className="text-xl font-bold tracking-tight text-primary">Tuntas</span>
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">

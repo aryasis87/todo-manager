@@ -3,30 +3,30 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
-const __jsonld = {"@context":"https://schema.org","@type":"WebApplication","name":"TaskFlow Manager","description":"Task manager premium","url":"https://todo-manager-ivory-seven.vercel.app","applicationCategory":"ProductivityApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"IDR"}};
+const __jsonld = {"@context":"https://schema.org","@type":"WebApplication","name":"Tuntas","description":"Task manager premium","url":"https://todo-manager-ivory-seven.vercel.app","applicationCategory":"ProductivityApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"IDR"}};
 
 export const metadata = {
   metadataBase: new URL("https://todo-manager-ivory-seven.vercel.app"),
-  title: "TaskFlow — Task Manager Lengkap",
+  title: "Tuntas — Task Manager Lengkap",
   description: "Task manager premium: prioritas, tenggat, label, pencarian, sort, statistik, dan dark mode.",
-  applicationName: "TaskFlow",
+  applicationName: "Tuntas",
   keywords: ["task manager", "manajemen tugas", "produktivitas", "to-do", "pengelola tugas"],
-  authors: [{ name: "TaskFlow" }],
-  creator: "TaskFlow",
-  publisher: "TaskFlow",
+  authors: [{ name: "Tuntas" }],
+  creator: "Tuntas",
+  publisher: "Tuntas",
   alternates: { canonical: "https://todo-manager-ivory-seven.vercel.app" },
   openGraph: {
     type: "website",
     locale: "id_ID",
     url: "https://todo-manager-ivory-seven.vercel.app",
-    siteName: "TaskFlow",
-    title: "TaskFlow — Task Manager Lengkap",
+    siteName: "Tuntas",
+    title: "Tuntas — Task Manager Lengkap",
     description: "Task manager premium: prioritas, tenggat, label, pencarian, sort, statistik, dan dark mode.",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "TaskFlow — Task Manager Lengkap" }],
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Tuntas — Task Manager Lengkap" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TaskFlow — Task Manager Lengkap",
+    title: "Tuntas — Task Manager Lengkap",
     description: "Task manager premium: prioritas, tenggat, label, pencarian, sort, statistik, dan dark mode.",
     images: ["/og.jpg"],
   },

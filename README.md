@@ -1,4 +1,10 @@
-# Task Manager (Rich)
+# Tuntas — Task Manager Lengkap
+
+**Demo live:** https://todo-manager-ivory-seven.vercel.app
+
+![Tangkapan layar](public/og.jpg)
+
+> Data tersimpan di browser (localStorage), tanpa backend.
 
 Task manager kaya fitur (localStorage). Varian "kedalaman teknis" dari portfolio.
 
@@ -25,3 +31,7 @@ Next.js 15 · React 19 · Tailwind v4 · lucide-react
 npm install
 npm run dev
 ```
+
+---
+
+Bagian dari koleksi 3 aplikasi to-do di [PortalTodo](https://portal-todo.vercel.app). Dibuat oleh [PintuWeb](https://pintuweb.com), jasa pembuatan website.

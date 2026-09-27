@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ============================================================
-   TaskFlow Task Manager — design tokens (porting dari Stitch).
+   Tuntas — design tokens (porting dari Stitch).
    Satu sistem dgn classic-todo & kanban-board. .dark flip var.
    ============================================================ */
 @theme {
