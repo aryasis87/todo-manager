@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Plus, Flag, Tag, Save } from 'lucide-react';
 import { PRIORITY_KEYS, PRIORITIES } from '@/lib/taskUtils';
+import { tambahHari } from '@/lib/waktu';
 
 const empty = { title: '', notes: '', priority: 'medium', dueDate: '', tags: [] };
 
@@ -12,7 +13,7 @@ const PILL_ACTIVE = {
 };
 
 // Modal tambah/edit task. `task` null = mode tambah.
-export default function TaskModal({ open, task, onClose, onSave }) {
+export default function TaskModal({ open, task, hari, onClose, onSave }) {
   const [form, setForm] = useState(empty);
   const [tagInput, setTagInput] = useState('');
   const titleRef = useRef(null);
@@ -59,40 +60,46 @@ export default function TaskModal({ open, task, onClose, onSave }) {
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="judul-modal"
       >
         {/* drag handle (mobile) */}
         <div className="flex justify-center pt-3 sm:hidden">
-          <span className="h-1.5 w-12 rounded-full bg-outline-variant/50" />
+          <span className="h-1.5 w-12 rounded-full bg-outline-variant/50" aria-hidden="true" />
         </div>
 
         <div className="flex items-center justify-between border-b border-outline-variant/30 px-6 py-4">
-          <h2 className="text-lg font-semibold text-on-surface">{task ? 'Edit Tugas' : 'Tambah Tugas Baru'}</h2>
-          <button onClick={onClose} aria-label="Tutup" className="rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-low">
+          <h2 id="judul-modal" className="text-lg font-semibold text-on-surface">{task ? 'Ubah tugas' : 'Tugas baru'}</h2>
+          <button type="button" onClick={onClose} aria-label="Tutup" className="rounded-full p-1.5 text-on-surface-variant hover:bg-surface-container-low">
             <X size={18} />
           </button>
         </div>
 
-        <form onSubmit={submit} className="flex-1 space-y-5 overflow-y-auto p-6">
-          <input ref={titleRef} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Judul tugas..." className={`${field} text-base`} required />
+        <form id="form-tugas" onSubmit={submit} className="flex-1 space-y-5 overflow-y-auto p-6">
+          <label className="block text-xs font-semibold text-on-surface-variant">Judul
+            <input ref={titleRef} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Apa yang perlu dituntaskan?" className={`${field} mt-1.5 text-base`} required />
+          </label>
 
-          <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} placeholder="Catatan (opsional)..." className={`${field} resize-none`} />
+          <label className="block text-xs font-semibold text-on-surface-variant">Catatan (opsional)
+            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} className={`${field} mt-1.5 resize-none`} />
+          </label>
 
           {/* Prioritas — radio pills */}
           <div>
-            <span className="mb-2 block text-xs font-semibold text-on-surface-variant">Prioritas</span>
-            <div className="flex gap-2">
+            <span className="mb-2 block text-xs font-semibold text-on-surface-variant" id="l-prioritas">Prioritas</span>
+            <div className="flex flex-wrap gap-2" role="group" aria-labelledby="l-prioritas">
               {PRIORITY_KEYS.map((k) => {
                 const active = form.priority === k;
                 return (
                   <button
                     key={k}
                     type="button"
+                    aria-pressed={active}
                     onClick={() => setForm({ ...form, priority: k })}
                     className={`flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition ${
                       active ? PILL_ACTIVE[k] : 'border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
                     }`}
                   >
-                    <Flag size={15} /> {PRIORITIES[k].label}
+                    <Flag size={15} aria-hidden="true" /> {PRIORITIES[k].label}
                   </button>
                 );
               })}
@@ -101,18 +108,28 @@ export default function TaskModal({ open, task, onClose, onSave }) {
 
           {/* Jatuh tempo */}
           <div>
-            <span className="mb-2 block text-xs font-semibold text-on-surface-variant">Jatuh Tempo</span>
-            <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className={`${field} cursor-pointer`} />
+            <label className="block text-xs font-semibold text-on-surface-variant">Jatuh tempo
+              <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className={`${field} mt-1.5 cursor-pointer`} />
+            </label>
+            {hari && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[['Hari ini', 0], ['Besok', 1], ['Pekan depan', 7]].map(([l, n]) => (
+                  <button key={l} type="button" onClick={() => setForm({ ...form, dueDate: tambahHari(hari, n) })} aria-pressed={form.dueDate === tambahHari(hari, n)}
+                    className="rounded-full border border-outline-variant px-3 py-1 text-xs font-semibold text-on-surface-variant hover:border-primary hover:text-primary">{l}</button>
+                ))}
+                {form.dueDate && <button type="button" onClick={() => setForm({ ...form, dueDate: '' })} className="rounded-full px-3 py-1 text-xs font-semibold text-on-surface-variant hover:text-error">Tanpa tenggat</button>}
+              </div>
+            )}
           </div>
 
           {/* Tag */}
           <div>
-            <span className="mb-2 block text-xs font-semibold text-on-surface-variant">Tag</span>
+            <span className="mb-2 block text-xs font-semibold text-on-surface-variant" id="l-label">Label</span>
             <div className="flex flex-wrap items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest p-2 transition focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
               {form.tags.map((t) => (
                 <span key={t} className="inline-flex items-center gap-1 rounded-md bg-surface-container-high px-2.5 py-1 text-xs font-medium text-on-surface">
-                  <Tag size={12} className="text-on-surface-variant" /> {t}
-                  <button type="button" onClick={() => removeTag(t)} aria-label={`Hapus ${t}`} className="ml-0.5 text-on-surface-variant hover:text-error">
+                  <Tag size={12} className="text-on-surface-variant" aria-hidden="true" /> {t}
+                  <button type="button" onClick={() => removeTag(t)} aria-label={`Hapus label ${t}`} className="ml-0.5 text-on-surface-variant hover:text-error">
                     <X size={12} />
                   </button>
                 </span>
@@ -121,7 +138,8 @@ export default function TaskModal({ open, task, onClose, onSave }) {
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
-                placeholder="Tambah tag..."
+                placeholder="Ketik label lalu Enter…"
+                aria-labelledby="l-label"
                 className="min-w-[100px] flex-1 border-none bg-transparent px-2 py-1 text-sm text-on-surface outline-none placeholder:text-outline"
               />
             </div>
@@ -130,8 +148,8 @@ export default function TaskModal({ open, task, onClose, onSave }) {
 
         <footer className="flex justify-end gap-3 border-t border-outline-variant/30 bg-surface p-4">
           <button type="button" onClick={onClose} className="rounded-lg px-5 py-2.5 text-sm font-semibold text-primary transition hover:bg-surface-container-low">Batal</button>
-          <button onClick={submit} className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition hover:brightness-110">
-            <Save size={16} /> Simpan
+          <button type="submit" form="form-tugas" className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition hover:brightness-110">
+            <Save size={16} aria-hidden="true" /> Simpan
           </button>
         </footer>
       </div>

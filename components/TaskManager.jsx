@@ -1,18 +1,14 @@
 'use client';
-import { useMemo, useState } from 'react';
-import { Plus, X, ListTodo, Activity, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Plus, X, Activity, CheckCircle2, AlertTriangle, CalendarClock, Pencil } from 'lucide-react';
 import { useLocalStorage } from '@/lib/useLocalStorage';
-import { PRIORITIES, PRIORITY_KEYS, isOverdue } from '@/lib/taskUtils';
+import { useHariIni } from '@/lib/useHariIni';
+import { fmtTanggal } from '@/lib/waktu';
+import { KUNCI, KUNCI_NAMA, PRIORITIES, PRIORITY_KEYS, isOverdue, isDueToday, contoh, sapaan } from '@/lib/taskUtils';
 import TopBar from './TopBar';
 import TaskCard from './TaskCard';
 import TaskModal from './TaskModal';
-
-const initialTasks = [
-  { id: 't1', title: 'Update proposal desain', notes: 'Revisi bagian harga dulu', priority: 'high', dueDate: '2026-06-20', tags: ['desain'], done: false, createdAt: 1718000004000 },
-  { id: 't2', title: 'Meeting koordinasi tim', priority: 'medium', dueDate: '2026-06-25', tags: ['internal'], done: false, createdAt: 1718000003000 },
-  { id: 't3', title: 'Olahraga 30 menit', priority: 'low', dueDate: '', tags: ['kesehatan'], done: false, createdAt: 1718000002000 },
-  { id: 't4', title: 'Review dokumentasi API', priority: 'low', dueDate: '', tags: ['dev'], done: true, createdAt: 1718000001000 },
-];
 
 const STATUS = [
   { key: 'all', label: 'Semua' },
@@ -20,59 +16,67 @@ const STATUS = [
   { key: 'done', label: 'Selesai' },
 ];
 const SORTS = [
-  { key: 'created', label: 'Terbaru' },
   { key: 'due', label: 'Jatuh tempo' },
   { key: 'priority', label: 'Prioritas' },
+  { key: 'created', label: 'Terbaru' },
 ];
 
-function StatCard({ icon: Icon, label, value, accent, blob, highlight }) {
+function StatCard({ icon: Icon, label, value, accent, highlight, onClick, aktif }) {
   return (
-    <div className={`relative h-28 overflow-hidden rounded-xl border p-4 ${highlight ? 'border-error/20 bg-error-container' : 'border-outline-variant bg-surface-container-lowest'}`}>
-      <div className={`absolute -right-4 -top-4 h-16 w-16 rounded-bl-full ${blob}`} />
-      <div className={`relative flex items-center gap-2 ${accent}`}>
-        <Icon size={18} />
-        <span className="text-[13px] font-medium">{label}</span>
-      </div>
-      <div className={`relative mt-3 text-2xl font-bold ${highlight ? 'text-on-error-container' : 'text-on-surface'}`}>{value}</div>
-    </div>
+    <button type="button" onClick={onClick} aria-pressed={aktif}
+      className={`relative h-24 overflow-hidden rounded-xl border p-4 text-left transition hover:-translate-y-0.5 ${aktif ? 'ring-2 ring-primary' : ''} ${highlight ? 'border-error/30 bg-error-container' : 'border-outline-variant bg-surface-container-lowest'}`}>
+      <span className={`relative flex items-center gap-2 ${accent}`}><Icon size={17} aria-hidden="true" /><span className="text-[13px] font-semibold">{label}</span></span>
+      <span className={`relative mt-2 block text-2xl font-bold ${highlight ? 'text-on-error-container' : 'text-on-surface'}`}>{value}</span>
+    </button>
   );
 }
 
 export default function TaskManager() {
-  const [tasks, setTasks, loaded] = useLocalStorage('tasks.manager.v2', initialTasks);
+  const sp = useSearchParams();
+  const { hari, sekarang } = useHariIni(300);
+  const [tasks, setTasks, loaded] = useLocalStorage(KUNCI, null);
+  const [nama, setNama] = useLocalStorage(KUNCI_NAMA, '');
+  const [ubahNama, setUbahNama] = useState(false);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('all');
+  const [status, setStatus] = useState('active');
+  const [cepat, setCepat] = useState(null); // 'today' | 'overdue'
   const [priority, setPriority] = useState('all');
   const [tagFilter, setTagFilter] = useState(null);
-  const [sort, setSort] = useState('created');
+  const [sort, setSort] = useState('due');
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
 
+  useEffect(() => { if (loaded && tasks === null) setTasks(contoh()); }, [loaded, tasks, setTasks]);
+  // ?label= dari halaman Label.
+  useEffect(() => { const l = sp.get('label'); if (l) { setTagFilter(l); setStatus('all'); } }, [sp]);
+
+  const semua = tasks || [];
   const stats = useMemo(() => ({
-    total: tasks.length,
-    active: tasks.filter((t) => !t.done).length,
-    done: tasks.filter((t) => t.done).length,
-    overdue: tasks.filter((t) => isOverdue(t)).length,
-  }), [tasks]);
+    active: semua.filter((t) => !t.done).length,
+    done: semua.filter((t) => t.done).length,
+    today: semua.filter((t) => !t.done && isDueToday(t, hari)).length,
+    overdue: semua.filter((t) => isOverdue(t, hari)).length,
+  }), [semua, hari]);
 
   const visible = useMemo(() => {
-    let list = [...tasks];
+    let list = [...semua];
     if (status === 'active') list = list.filter((t) => !t.done);
     if (status === 'done') list = list.filter((t) => t.done);
+    if (cepat === 'today') list = list.filter((t) => !t.done && isDueToday(t, hari));
+    if (cepat === 'overdue') list = list.filter((t) => isOverdue(t, hari));
     if (priority !== 'all') list = list.filter((t) => t.priority === priority);
     if (tagFilter) list = list.filter((t) => t.tags?.includes(tagFilter));
     if (search.trim()) {
       const q = search.toLowerCase();
-      list = list.filter((t) =>
-        t.title.toLowerCase().includes(q) || t.notes?.toLowerCase().includes(q) || t.tags?.some((tag) => tag.includes(q)));
+      list = list.filter((t) => t.title.toLowerCase().includes(q) || t.notes?.toLowerCase().includes(q) || t.tags?.some((tag) => tag.includes(q)));
     }
     list.sort((a, b) => {
       if (sort === 'priority') return PRIORITIES[b.priority].order - PRIORITIES[a.priority].order;
-      if (sort === 'due') { if (!a.dueDate) return 1; if (!b.dueDate) return -1; return new Date(a.dueDate) - new Date(b.dueDate); }
+      if (sort === 'due') { if (!a.dueDate && !b.dueDate) return b.createdAt - a.createdAt; if (!a.dueDate) return 1; if (!b.dueDate) return -1; return a.dueDate.localeCompare(b.dueDate); }
       return b.createdAt - a.createdAt;
     });
     return list;
-  }, [tasks, status, priority, tagFilter, search, sort]);
+  }, [semua, status, cepat, priority, tagFilter, search, sort, hari]);
 
   const openAdd = () => { setEditing(null); setModalOpen(true); };
   const openEdit = (task) => { setEditing(task); setModalOpen(true); };
@@ -81,45 +85,56 @@ export default function TaskManager() {
     else setTasks((p) => [{ id: `t-${Date.now()}`, done: false, createdAt: Date.now(), ...data }, ...p]);
     setModalOpen(false);
   };
-  const toggle = (id) => setTasks((p) => p.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
-  const remove = (id) => setTasks((p) => p.filter((t) => t.id !== id));
+  const toggle = (id) => setTasks((p) => p.map((t) => (t.id === id ? { ...t, done: !t.done, doneAt: t.done ? null : new Date().toISOString() } : t)));
+  const remove = (id) => { const t = semua.find((x) => x.id === id); if (window.confirm(`Hapus "${t?.title}"?`)) setTasks((p) => p.filter((x) => x.id !== id)); };
+  const pilihCepat = (k) => { setCepat((c) => (c === k ? null : k)); setStatus('active'); };
 
-  const select = 'rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface-variant outline-none focus:border-primary';
-  const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const select = 'rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none focus:border-primary';
+  const ada = cepat || priority !== 'all' || tagFilter || search.trim();
 
   return (
     <div className="min-h-screen bg-background">
       <TopBar query={search} onQuery={setSearch} />
 
-      <main className="mx-auto w-full max-w-3xl px-4 pb-28 pt-6">
-        {/* Greeting */}
+      <main className="mx-auto w-full max-w-4xl px-4 pb-28 pt-6">
         <section className="mb-6">
-          <p className="text-sm text-on-surface-variant">{today}</p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight text-on-surface">Halo, Pengguna!</h1>
+          <p className="text-sm text-on-surface-variant">{hari ? fmtTanggal(hari, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : ' '}</p>
+          {ubahNama ? (
+            <form className="mt-1 flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); setUbahNama(false); }}>
+              <label className="flex-1"><span className="sr-only">Nama panggilan</span>
+                <input autoFocus value={nama} onChange={(e) => setNama(e.target.value.slice(0, 24))} placeholder="Nama panggilan" className="w-full max-w-xs rounded-lg border border-primary bg-surface-container-lowest px-3 py-2 text-xl font-bold text-on-surface outline-none" />
+              </label>
+              <button type="submit" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-on-primary">Simpan</button>
+            </form>
+          ) : (
+            <h1 className="mt-1 flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight text-on-surface">
+              {sekarang ? sapaan(sekarang) : 'Halo'}{nama ? `, ${nama}` : ''}.
+              <button type="button" onClick={() => setUbahNama(true)} aria-label="Atur nama panggilan" className="rounded-lg p-1.5 text-on-surface-variant hover:bg-surface-container-high hover:text-primary"><Pencil size={16} /></button>
+            </h1>
+          )}
           <p className="mt-1 text-sm text-on-surface-variant">
-            Anda memiliki {stats.active} tugas aktif{stats.overdue > 0 ? `, ${stats.overdue} terlambat` : ''}. Mari selesaikan.
+            {stats.active} tugas aktif{stats.today ? `, ${stats.today} jatuh tempo hari ini` : ''}{stats.overdue ? `, ${stats.overdue} terlambat` : ''}.
           </p>
         </section>
 
-        {/* Bento stats */}
-        <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard icon={ListTodo} label="Total" value={stats.total} accent="text-on-surface-variant" blob="bg-surface-container-low" />
-          <StatCard icon={Activity} label="Aktif" value={stats.active} accent="text-primary" blob="bg-primary-container/10" />
-          <StatCard icon={CheckCircle2} label="Selesai" value={stats.done} accent="text-secondary" blob="bg-surface-container-high" />
-          <StatCard icon={AlertTriangle} label="Terlambat" value={stats.overdue} accent="text-on-error-container" blob="bg-error/10" highlight />
+        <section className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Ringkasan">
+          <StatCard icon={Activity} label="Aktif" value={stats.active} accent="text-primary" onClick={() => { setCepat(null); setStatus('active'); }} aktif={status === 'active' && !cepat} />
+          <StatCard icon={CalendarClock} label="Hari ini" value={stats.today} accent="text-tertiary" onClick={() => pilihCepat('today')} aktif={cepat === 'today'} />
+          <StatCard icon={AlertTriangle} label="Terlambat" value={stats.overdue} accent="text-on-error-container" highlight onClick={() => pilihCepat('overdue')} aktif={cepat === 'overdue'} />
+          <StatCard icon={CheckCircle2} label="Selesai" value={stats.done} accent="text-secondary" onClick={() => { setCepat(null); setStatus('done'); }} aktif={status === 'done' && !cepat} />
         </section>
 
-        {/* Toolbar */}
-        <section className="sticky top-[64px] z-30 -mx-4 mb-4 bg-background/90 px-4 py-2 backdrop-blur-md">
+        <section className="sticky top-[64px] z-30 -mx-4 mb-4 bg-background/90 px-4 py-2 backdrop-blur-md" aria-label="Saringan">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex gap-1 rounded-lg border border-outline-variant bg-surface-container-low p-1">
+            <div className="flex gap-1 rounded-lg border border-outline-variant bg-surface-container-low p-1" role="group" aria-label="Status">
               {STATUS.map((s) => (
-                <button key={s.key} onClick={() => setStatus(s.key)} className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${status === s.key ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                <button key={s.key} type="button" onClick={() => { setStatus(s.key); setCepat(null); }} aria-pressed={status === s.key}
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${status === s.key ? 'bg-surface-container-lowest text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}>
                   {s.label}
                 </button>
               ))}
             </div>
-            <select value={priority} onChange={(e) => setPriority(e.target.value)} className={select} aria-label="Filter prioritas">
+            <select value={priority} onChange={(e) => setPriority(e.target.value)} className={select} aria-label="Saring prioritas">
               <option value="all">Semua prioritas</option>
               {PRIORITY_KEYS.map((k) => <option key={k} value={k}>{PRIORITIES[k].label}</option>)}
             </select>
@@ -127,39 +142,36 @@ export default function TaskManager() {
               {SORTS.map((s) => <option key={s.key} value={s.key}>Urut: {s.label}</option>)}
             </select>
           </div>
-          {tagFilter && (
-            <button onClick={() => setTagFilter(null)} className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary-container/15 px-3 py-1 text-sm font-medium text-primary">
-              Label: #{tagFilter} <X size={13} />
-            </button>
+          {(tagFilter || cepat) && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {tagFilter && <button type="button" onClick={() => setTagFilter(null)} className="inline-flex items-center gap-1.5 rounded-full bg-primary-container/15 px-3 py-1 text-sm font-medium text-primary">Label: #{tagFilter} <X size={13} aria-hidden="true" /><span className="sr-only">hapus saringan</span></button>}
+              {cepat && <button type="button" onClick={() => setCepat(null)} className="inline-flex items-center gap-1.5 rounded-full bg-primary-container/15 px-3 py-1 text-sm font-medium text-primary">{cepat === 'today' ? 'Jatuh tempo hari ini' : 'Terlambat'} <X size={13} aria-hidden="true" /><span className="sr-only">hapus saringan</span></button>}
+            </div>
           )}
         </section>
 
-        {/* List */}
-        {!loaded ? (
-          <p className="py-12 text-center text-sm text-outline">Memuat…</p>
+        <h2 className="sr-only">Daftar tugas</h2>
+        {!loaded || tasks === null ? (
+          <p className="py-12 text-center text-sm text-on-surface-variant">Memuat…</p>
         ) : visible.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-outline-variant py-16 text-center text-on-surface-variant">
-            Tidak ada tugas yang cocok.
+            {ada ? 'Tidak ada tugas yang cocok dengan saringan.' : status === 'done' ? 'Belum ada tugas yang selesai.' : 'Semua tuntas. Tambah tugas baru dengan tombol +.'}
           </div>
         ) : (
           <ul className="space-y-2.5">
             {visible.map((task) => (
-              <TaskCard key={task.id} task={task} onToggle={toggle} onEdit={openEdit} onRemove={remove} onTagClick={setTagFilter} />
+              <TaskCard key={task.id} task={task} hari={hari} onToggle={toggle} onEdit={openEdit} onRemove={remove} onTagClick={(t) => { setTagFilter(t); setStatus('all'); }} />
             ))}
           </ul>
         )}
       </main>
 
-      {/* FAB */}
-      <button
-        onClick={openAdd}
-        aria-label="Tambah Tugas"
-        className="group fixed bottom-8 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-on-primary shadow-lg shadow-primary/30 transition hover:bg-primary-container active:scale-90"
-      >
+      <button type="button" onClick={openAdd} aria-label="Tambah tugas"
+        className="group fixed bottom-8 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-on-primary shadow-lg shadow-primary/30 transition hover:bg-primary-container active:scale-90">
         <Plus size={28} className="transition-transform duration-300 group-hover:rotate-90" />
       </button>
 
-      <TaskModal open={modalOpen} task={editing} onClose={() => setModalOpen(false)} onSave={save} />
+      <TaskModal open={modalOpen} task={editing} hari={hari} onClose={() => setModalOpen(false)} onSave={save} />
     </div>
   );
 }

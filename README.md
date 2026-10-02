@@ -1,37 +1,43 @@
-# Tuntas — Task Manager Lengkap
+# Tuntas — Pengelola tugas dengan kalender
+
+Pengelola tugas lengkap untuk urusan kerja dan rumah: prioritas, tenggat, label, dan kalender. Sapaan mengikuti jam WIB dan nama panggilan yang bisa diatur.
 
 **Demo live:** https://todo-manager-ivory-seven.vercel.app
 
 ![Tangkapan layar](public/og.jpg)
 
-> Data tersimpan di browser (localStorage), tanpa backend.
-
-Task manager kaya fitur (localStorage). Varian "kedalaman teknis" dari portfolio.
+> Data tersimpan di `localStorage` peramban — tanpa akun dan tanpa server. Kunjungan pertama diisi data contoh yang tanggalnya relatif terhadap hari ini; tanggal dan jam dihitung dalam WIB.
 
 ## Fitur
-- **CRUD via modal**: judul, catatan, **prioritas** (Tinggi/Sedang/Rendah), **tenggat (due date)**, **label/tag**
-- **Pencarian** (judul/catatan/label), **filter** status & prioritas, **filter per label** (klik chip)
-- **Sortir**: Terbaru / Jatuh tempo / Prioritas
-- **Statistik**: Total, Aktif, Selesai, Terlambat (overdue otomatis dari due date)
-- Penanda **terlambat** (merah) & **hari ini** (kuning)
-- **Persist ke localStorage**, responsif, aksesibel (dialog, label, fokus)
 
-## Stack
-Next.js 15 · React 19 · Tailwind v4 · lucide-react
+- Kartu ringkasan yang juga menyaring: Aktif, Jatuh tempo hari ini, Terlambat, Selesai.
+- Tenggat dibaca relatif ("Besok", "Terlambat 2 hari", nama hari) dan dibandingkan dengan tanggal WIB.
+- Formulir tugas dengan tombol cepat Hari ini / Besok / Pekan depan dan label.
+- `/kalender` — kalender bulanan dengan titik per tugas; centang langsung dari daftar per hari.
+- `/label` — jumlah tugas per label, ganti nama atau lepas label dari semua tugas sekaligus; tautan ke daftar tersaring (`/?label=`).
 
-## Struktur
-- `components/TaskManager.jsx` — state, statistik, toolbar (search/filter/sort), daftar
-- `components/TaskModal.jsx` — form tambah/edit (prioritas, due date, tag chips)
-- `components/TaskCard.jsx` — kartu task (badge prioritas, due date, label)
-- `lib/taskUtils.js` — konfigurasi prioritas + helper tanggal (overdue/today/format)
-- `lib/useLocalStorage.js` — hook persist
+## Halaman
 
-## Menjalankan
+`/` · `/kalender` · `/label`
+
+## Teknologi
+
+- Next.js 15.5 (App Router) dan React 19
+- Tailwind CSS v4 (token tema + `.dark`)
+- JavaScript
+- Lucide (ikon)
+- Font: DM Sans (next/font)
+- SEO: metadata per halaman, Open Graph, JSON-LD, sitemap.xml, dan robots.txt
+
+## Menjalankan secara lokal
+
 ```bash
 npm install
 npm run dev
 ```
 
+Buka http://localhost:3000. Untuk build produksi: `npm run build` lalu `npm start`.
+
 ---
 
-Bagian dari koleksi 3 aplikasi to-do di [PortalTodo](https://portal-todo.vercel.app). Dibuat oleh [PintuWeb](https://pintuweb.com), jasa pembuatan website.
+Bagian dari koleksi 3 aplikasi daftar tugas di [PortalTodo](https://portal-todo.vercel.app). Dibuat oleh [PintuWeb](https://pintuweb.com), jasa pembuatan website.

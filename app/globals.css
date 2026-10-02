@@ -32,17 +32,19 @@
   --color-on-error-container: #93000a;
 
   --color-secondary: #047857;            /* hijau — Selesai */
-  --color-tertiary: #b45309;             /* oranye — Sedang / Hari ini */
+  --color-tertiary: #92400e;             /* oranye — Sedang / Hari ini */
   --color-tertiary-container: #d97706;
 
   --color-inverse-surface: #2d3133;
   --color-inverse-on-surface: #eff1f3;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-dmsans), ui-sans-serif, system-ui, sans-serif;
 }
 
 .dark {
   --color-primary: #c3c0ff;
+  --color-primary-container: #a8a3ff;
+  --color-on-primary: #1a1458;
 
   --color-background: #0c111d;
   --color-surface: #0c111d;
